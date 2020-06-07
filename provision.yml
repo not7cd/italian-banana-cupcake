@@ -40,3 +40,43 @@
         name: avahi-daemon
         state: started
       become: yes
+
+    - name: Install packages for I2C for OLED
+      package:
+        name:
+          - python3-dev
+          - python-smbus
+          - i2c-tools
+          - python3-pil
+          - python3-pip
+          - python3-setuptools
+          - python3-rpi.gpio
+      become: yes
+    - name: Install OLED python lib
+      pip:
+        name: adafruit-circuitpython-ssd1306
+        executable: pip3
+    - name: Install git
+      package:
+        name: git
+      become: yes
+    
+    # gpio support
+    - name: Clone WiringBP
+      git:
+        repo: 'https://github.com/LeMaker/WiringBP.git'
+        dest: wiringbp
+        version: bananapi
+        force: yes
+    - name: Make build executable
+      file:
+        path: wiringbp/build
+        mode: '+x'
+
+    - name: Build and install
+      command:
+        cmd: build
+        chdir: wiringbp
+        creates: /usr/local/bin/gpio
+      become: yes
+
