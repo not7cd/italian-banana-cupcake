@@ -1,0 +1,42 @@
+- hosts: italian-banana-cupcake
+  remote_user: banana
+  handlers:
+    - name: restart cups
+      service:
+        name: cups
+        state: restarted
+  tasks:
+    - name: Install required packages for cups
+      package:
+        name:
+          - cups
+          - avahi-daemon
+        state: present
+      become: yes
+
+    - service:
+        name: cups
+        state: started
+      become: yes
+
+    - name: Enable web panel
+      lineinfile:
+        path: /etc/cups/cupsd.conf
+        regexp: '^Browsing'
+        line: 'Browsing On'
+      notify: restart cups
+      become: yes
+
+    - name: Enable listening on port
+      lineinfile:
+        path: /etc/cups/cupsd.conf
+        regexp: '^Listen localhost:631'
+        line: 'Port 631'
+      notify: restart cups
+      become: yes
+
+    - name: Enable network sharing
+      service:
+        name: avahi-daemon
+        state: started
+      become: yes
